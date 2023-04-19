@@ -1,13 +1,32 @@
 const express = require('express');
-const inquirer = require('inquirer');
-const table = require('console.table');
 const db = require('./config/connection');
+const startPrompt = require('./db/index');
 
-const PORT = process.env.PORT || 3001;
 const app = express();
+const PORT = process.env.PORT || 3001;
 
-// Express middleware for POST and PUT requests (req.body)
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use((req, res) => {
+    res.status(404).quit();
+});
 
-app.listen(PORT, () => console.log(`Server now listening at http://localhost:${PORT}`));
+db.connect(err => {
+    if (err) throw err;
+    console.log(`
+    ───▄▀▀▀▄▄▄▄▄▄▄▀▀▀▄───
+    ───█▒▒░░░░░░░░░▒▒█───
+    ────█░░█░░░░░█░░█────
+    ─▄▄──█░░░▀█▀░░░█──▄▄─
+    █░░█─▀▄░░░░░░░▄▀─█░░█
+    █▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀█
+    █░░╦─╦╔╗╦─╔╗╔╗╔╦╗╔╗░░█
+    █░░║║║╠─║─║─║║║║║╠─░░█
+    █░░╚╩╝╚╝╚╝╚╝╚╝╩─╩╚╝░░█
+    █▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄█
+    `);
+    app.listen(PORT, () => {
+      console.log(`Server now listening at ${PORT}`);
+      startPrompt();
+    });
+  });
