@@ -9,7 +9,7 @@ INSERT INTO department (department_name) VALUES
 ('Angelines'),
 ('Merchant & Trade');
 
-INSERT INTO employee_roles (title, salary, department_id) VALUES
+INSERT INTO role (title, salary, department_id) VALUES
 ('GSC', 30000, 1),
 ('Valet Manager', 45000, 1),
 ('House Keeping', 25000, 2),
@@ -25,18 +25,21 @@ INSERT INTO employee_roles (title, salary, department_id) VALUES
 ('Bartender', 60000, 7),
 ('M&T Manager', 70000, 7);
 
-INSERT INTO employee (first_name, last_name, role_id) VALUES
-('Jaden', 'Hall', 1),
-('Jarred', 'Campbell', 2),
-('Carmen', 'Perez', 3),
-('Tommy', 'White', 4),
-('Frank', 'Cruz', 5),
-('Chris', 'Barnes', 6),
-('Noah', 'Cooks', 7),
-('Kim', 'Cole', 8),
-('Cody', 'Free', 9),
-('Anthony', 'Dwell', 10),
-('Brittney', 'Cast', 11),
-('Kevin', 'Le', 12),
-('Sam', 'Collins', 13),
-('Amanda', 'Yerns', 14);
+INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES
+
+('Jarred', 'Campbell', 2, NULL),
+('Tommy', 'White', 4, NULL),
+('Chris', 'Barnes', 6, NULL),
+('Kim', 'Cole', 8, NULL),
+('Anthony', 'Dwell', 10, NULL),
+('Kevin', 'Le', 12, NULL),
+('Amanda', 'Yerns', 14, NULL);
+
+INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES
+('Jaden', 'Hall', 1, 1),
+('Carmen', 'Perez', 3, 2),
+('Frank', 'Cruz', 5, 3),
+('Noah', 'Cooks', 7, 4),
+('Cody', 'Free', 9, 5),
+('Brittney', 'Cast', 11, 7),
+('Sam', 'Collins', 13, 6);
