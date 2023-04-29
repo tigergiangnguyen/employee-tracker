@@ -2,13 +2,14 @@ const inquirer = require('inquirer');
 const table = require('console.table');
 const db = require('./config/connection');
 
-
+// A callback function that attempts to connect to the database
 db.connect(err => {
     if (err) throw err;
     console.log('connected as id' + db.threadId);
     afterConnection();
 });
 
+// Successfully connected to the database, console.log a welcome sign
 afterConnection = () => {
     console.log('───▄▀▀▀▄▄▄▄▄▄▄▀▀▀▄───')
     console.log('───█▒▒░░░░░░░░░▒▒█───')
@@ -23,6 +24,7 @@ afterConnection = () => {
     startPrompt();
 };
 
+// Inquirer package that runs questions for the user to answer
 function startPrompt() {
     inquirer
         .prompt({
@@ -40,6 +42,8 @@ function startPrompt() {
                 'Quit'
             ]
         })
+    // Depending what answer the user picks, 
+    // run the function related to the choice
     .then(answer => {
         switch (answer.toDo) {
         case 'View All Employees':
@@ -64,20 +68,24 @@ function startPrompt() {
             addDepartment();
           break;
         case 'Quit':
-            db.quit();
+            db.end();
           break;
         }
     });
 };
 
+
 function viewAllEmployees() {
-  const query = `SELECT e.id, e.first_name, e.last_name, r.title, d.department_name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager_name
+  // SQL query string that selects employee then joins the table together
+  const mySql = `SELECT e.id, e.first_name, e.last_name, r.title, d.department_name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager_name
   FROM employee e
   LEFT JOIN role r ON e.role_id = r.id
   LEFT JOIN department d ON r.department_id = d.id
   LEFT JOIN employee m ON e.manager_id = m.id;
   `;
-  db.query(query, (err, res) => {
+  // Calls the query string and If an error occurs,
+  // throw the error
+  db.query(mySql, (err, res) => {
       if (err) throw err;
       console.log('===============');
       console.table(res);
@@ -91,7 +99,7 @@ function addEmployee() {
       console.error(error);
       return;
     }
-
+    // Calls results array and returns a new array of objects
     const roles = results.map(({ id, title }) => ({
       name: title,
       value: id,
@@ -140,6 +148,7 @@ function addEmployee() {
   ])
   .then((answers) => {
     const MySql = 'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)';
+      // Insert new values and run SQL query
       const values = [
         answers.firstName,
         answers.lastName,
@@ -164,11 +173,11 @@ function addEmployee() {
 };
 
 function updateEmployee() {
-  const queryEmployees = 'SELECT employee.id, employee.first_name, employee.last_name, role.title FROM employee LEFT JOIN role ON employee.role_id = role.id';
-  const queryRoles = 'SELECT * FROM role';
-  db.query(queryEmployees, (err, resEmployees) => {
+  const mySql = 'SELECT employee.id, employee.first_name, employee.last_name, role.title FROM employee LEFT JOIN role ON employee.role_id = role.id';
+  const MySqlRole = 'SELECT * FROM role';
+  db.query(mySql, (err, resEmployees) => {
     if (err) throw err;
-      db.query(queryRoles, (err, resRoles) => {
+      db.query(MySqlRole, (err, resRoles) => {
         if (err) throw err;
           inquirer
               .prompt([
@@ -176,6 +185,8 @@ function updateEmployee() {
                     type: 'list',
                     name: 'employee',
                     message: 'Select the employee to update:',
+                    // Using map to change an array of employee objects
+                    // into an array of formatted employee names
                     choices: resEmployees.map(
                       (employee) =>
                         `${employee.first_name} ${employee.last_name}`
@@ -185,10 +196,15 @@ function updateEmployee() {
                     type: 'list',
                     name: 'role',
                     message: 'Select the new role:',
+                    // Change an array of role objects into an array
+                    // of title strings
                     choices: resRoles.map((role) => role.title)
                   },
           ])
           .then(answers => {
+            // Search for the employee objects in the array
+            // with first_name and last_name properties matches the
+            // select employee name
             const employee = resEmployees.find (
               (employee) =>
                 `${employee.first_name} ${employee.last_name}` === answers.employee
@@ -196,13 +212,14 @@ function updateEmployee() {
             const role = resRoles.find (
               (role) => role.title === answers.role
             );
+            // Update the role column
             const query =
               'UPDATE employee SET role_id = ? WHERE id = ?';
             db.query (query, [role.id, employee.id],
               (err, res) => {
               if (err) throw err;
                 console.log(
-                  `Updated ${employee.first_name} ${employee.last_name}'s role to ${role.title} in the database!`
+                  `${employee.first_name} ${employee.last_name}'s new role to ${role.title} has been updated!`
                 );
                 startPrompt();
                 }
@@ -246,10 +263,13 @@ function addRole() {
             }
     ])
     .then((answers) => {
+      // Find department column with id
       const department = res.find((department) => department.department_name === answers.department
       );
       console.log(res);
       const query = 'INSERT INTO role SET ?';
+        // Create a new role with inserting new values in title, salary,
+        // and department
         db.query(query,
           {
             title: answers.title,
@@ -259,7 +279,7 @@ function addRole() {
           (err, res) => {
             if (err) throw err;
               console.log(
-                `Added role ${answers.title} with salary ${answers.salary} to the ${answers.department} department in the database!`
+                `Added ${answers.title} to the role database!`
             );
       startPrompt();
       }
@@ -285,17 +305,16 @@ function addDepartment() {
           message: 'Enter the name of the new department:',
       })
       .then((answer) => {
-          console.log(answer.name);
           const query = `INSERT INTO department (department_name) VALUES ('${answer.name}')`;
           db.query(query, (err, res) => {
               if (err) throw err;
-              console.log(`Added department ${answer.name} to the database!`);
+              console.log(`Added ${answer.name} to the department database!`);
               startPrompt();
-              console.log(answer.name);
       });
   });
 };
 
+// Event listener to close SQL connection
 process.on('Quit', () => {
-  db.quit();
+  db.end();
 });
